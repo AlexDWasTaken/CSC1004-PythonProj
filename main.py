@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
+import matplotlib.pyplot as plt
 
 from utils.config_utils import read_args, load_config, Dict2Object
 
@@ -48,6 +49,9 @@ def train(args, model, device, train_loader, optimizer, epoch):
     :return:
     """
     model.train()
+    correct = 0
+    total = 0
+    running_loss = 0.0
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
@@ -55,8 +59,18 @@ def train(args, model, device, train_loader, optimizer, epoch):
         loss = F.nll_loss(output, target)
         loss.backward()
         optimizer.step()
+        
+        # Compute accuracy
+        _, predicted = torch.max(output.data, 1)
+        total += target.size(0)
+        correct += (predicted == target).sum().item()
+
+        # Accumulate loss
+        running_loss += loss.item()
+        
     '''Fill your code'''
-    training_acc, training_loss = None, None  # replace this line
+    training_acc = 100. * correct / total
+    training_loss = running_loss / len(train_loader) # Here, training_loss is loss per item. If you want loss per batch, then you can directly return running_loss
     return training_acc, training_loss
 
 
@@ -73,13 +87,17 @@ def test(model, device, test_loader):
     correct = 0
     with torch.no_grad():
         for data, target in test_loader:
-            '''Fill your code'''
-            pass
-    testing_acc, testing_loss = None, None  # replace this line
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
+            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            correct += pred.eq(target.view_as(pred)).sum().item()
+            
+    testing_acc, testing_loss = 100. * correct / len(test_loader.dataset), test_loss / len(test_loader.dataset)
     return testing_acc, testing_loss
 
 
-def plot(epoches, performance):
+def plot(epoches, performance, s):
     """
     plot the model peformance
     :param epoches: recorded epoches
@@ -87,7 +105,10 @@ def plot(epoches, performance):
     :return:
     """
     """Fill your code"""
-    pass
+    plt.plot(epoches, performance)
+    plt.xlabel('Epoch')
+    plt.ylabel(s)
+    plt.show()
 
 
 def run(config):
@@ -138,17 +159,34 @@ def run(config):
     for epoch in range(1, config.epochs + 1):
         train_acc, train_loss = train(config, model, device, train_loader, optimizer, epoch)
         """record training info, Fill your code"""
-        test_acc, train_loss = test(model, device, test_loader)
+        epoches.append(epoch)
+        training_accuracies.append(train_acc)
+        training_loss.append(train_loss)
+        
+        test_acc, test_loss = test(model, device, test_loader)
         """record testing info, Fill your code"""
+        testing_accuracies.append(test_acc)
+        testing_loss.append(test_loss)
+        
+        
         scheduler.step()
         """update the records, Fill your code"""
+        
+        """end filling"""
 
+    train_history.append(epoches)
+    train_history.append(training_accuracies)
+    train_history.append(training_loss)
+    train_history.append(testing_accuracies)
+    train_history.append(testing_loss)
+    
     """plotting training performance with the records"""
-    plot(epoches, training_loss)
+    plot(epoches, training_accuracies, "Training Accuracies")
+    plot(epoches, training_loss, "Training Loss")
 
     """plotting testing performance with the records"""
-    plot(epoches, testing_accuracies)
-    plot(epoches, testing_loss)
+    plot(epoches, testing_accuracies, "Testing Accuracies")
+    plot(epoches, testing_loss, "Testing Loss")
 
     if config.save_model:
         torch.save(model.state_dict(), "mnist_cnn.pt")
@@ -161,16 +199,53 @@ def plot_mean():
     :return:
     """
     """fill your code"""
+    mean_training_accuracies = []
+    mean_training_loss = []
+    mean_testing_accuracies = []
+    mean_testing_loss = []
+    epoches = recorded[0][0]
+    for i in range(0, recorded[0][0].__len__()):
+        mean_training_accuracies.append((recorded[0][1][i]+recorded[1][1][i]+recorded[2][1][i]) / 3)
+        mean_training_loss.append((recorded[0][2][i]+recorded[1][2][i]+recorded[2][2][i]) / 3)
+        mean_testing_accuracies.append((recorded[0][3][i]+recorded[1][3][i]+recorded[2][3][i]) / 3)
+        mean_testing_loss.append((recorded[0][4][i]+recorded[1][4][i]+recorded[2][4][i]) / 3)
+        
+    """plotting training performance with the records"""
+    plot(epoches, mean_training_accuracies, "Mean Training Accuracies")
+    plot(epoches, mean_training_loss, "Mean Training Loss")
+
+    """plotting testing performance with the records"""
+    plot(epoches, mean_testing_accuracies, "Mean Testing Accuracies")
+    plot(epoches, mean_testing_loss, "Mean Testing Loss")
+        
+    
 
 
 if __name__ == '__main__':
     arg = read_args()
 
+    train_history = []
+    recorded = []
+
     """toad training settings"""
     config = load_config(arg)
 
     """train model and record results"""
+    torch.manual_seed(123)
     run(config)
-
-    """plot the mean results"""
+    recorded.append(train_history)
+    train_history = []
+    
+    torch.manual_seed(321)
+    run(config)
+    recorded.append(train_history)
+    train_history = []
+    
+    torch.manual_seed(666)
+    run(config)
+    recorded.append(train_history)
+    train_history = []
+    
     plot_mean()
+    """plot the mean results"""
+    # plot_mean()

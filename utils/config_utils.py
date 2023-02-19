@@ -24,6 +24,12 @@ def read_args():
     args = parser.parse_args()
     return args
 
+def read_args_default():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config_file", help="path to configs file")
+    args = parser.parse_args(args=['D:\Code\CSC1004\Python\config\minist.yaml'])
+    return args
+
 
 class InitWithDict(object):
     """
