@@ -181,7 +181,7 @@ def run(config):
     train_history.append(testing_loss)
     
     """plotting training performance with the records"""
-    plot(epoches, training_accuracies, "Training Accuracies")
+    # plot(epoches, training_accuracies, "Training Accuracies")
     plot(epoches, training_loss, "Training Loss")
 
     """plotting testing performance with the records"""
@@ -211,7 +211,7 @@ def plot_mean():
         mean_testing_loss.append((recorded[0][4][i]+recorded[1][4][i]+recorded[2][4][i]) / 3)
         
     """plotting training performance with the records"""
-    plot(epoches, mean_training_accuracies, "Mean Training Accuracies")
+    # plot(epoches, mean_training_accuracies, "Mean Training Accuracies")
     plot(epoches, mean_training_loss, "Mean Training Loss")
 
     """plotting testing performance with the records"""
