@@ -10,6 +10,7 @@ from multiprocessing import Process, Array, Manager
 import matplotlib.pyplot as plt
 import time
 import pandas as pd
+import os
 
 from utils.config_utils import read_args, load_config, Dict2Object
 
@@ -108,10 +109,13 @@ def plot(epoches, performance, s):
     :return:
     """
     """Fill your code"""
+    image_name = os.path.join(r'./figs/', s +'.png')
     plt.plot(epoches, performance)
     plt.xlabel('Epoch')
     plt.ylabel(s)
-    plt.show()
+    plt.savefig(image_name)
+    plt.clf()
+    #plt.show()
     #plt.close()
 
 
@@ -274,7 +278,7 @@ if __name__ == '__main__':
 
     # Write records into a pandas dataframe than output
     columns = ['epochs', 'training accuracy', 'training loss', 'testing accuracy', 'testing loss']
-    dataframes = [pd.DataFrame(record, columns = columns) for record in records]
+    dataframes = [pd.DataFrame(list(map(list, zip(*record))), columns = columns) for record in records]
     
     writer = pd.ExcelWriter('data.xlsx')
     
