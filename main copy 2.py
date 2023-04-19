@@ -110,9 +110,10 @@ def plot(epoches, performance, s):
     """
     """Fill your code"""
     image_name = os.path.join(r'./figs/', s +'.png')
-    plt.plot(epoches, performance)
+    plt.plot(epoches, performance, label = s)
     plt.xlabel('Epoch')
     plt.ylabel(s)
+    plt.legend()
     plt.savefig(image_name)
     plt.clf()
     #plt.show()
@@ -193,7 +194,7 @@ def run(config, seed):
     train_history.append(testing_loss)
     
     """plotting training performance with the records"""
-    # plot(epoches, training_accuracies, "Training Accuracies")
+    plot(epoches, training_accuracies, "Training Accuracies With Seed" + str(seed))
     plot(epoches, training_loss, "Training Loss With Seed" + str(seed))
 
     """plotting testing performance with the records"""
@@ -225,7 +226,7 @@ def plot_mean():
         mean_testing_loss.append((recorded[0][4][i]+recorded[1][4][i]+recorded[2][4][i]) / 3)
         
     """plotting training performance with the records"""
-    # plot(epoches, mean_training_accuracies, "Mean Training Accuracies")
+    plot(epoches, mean_training_accuracies, "Mean Training Accuracies")
     plot(epoches, mean_training_loss, "Mean Training Loss")
 
     """plotting testing performance with the records"""
