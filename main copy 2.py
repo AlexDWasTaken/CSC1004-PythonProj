@@ -114,10 +114,11 @@ def plot(epoches, performance, s):
     plt.xlabel('Epoch')
     plt.ylabel(s)
     plt.legend()
+    plt.title(s)
     plt.savefig(image_name)
-    plt.clf()
     #plt.show()
     #plt.close()
+    plt.clf()
 
 
 def run(config, seed):
