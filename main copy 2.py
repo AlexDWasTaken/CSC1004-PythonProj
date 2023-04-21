@@ -247,25 +247,30 @@ if __name__ == '__main__':
     recorded = Manager().list()
     rank = Manager().list()
     arg = read_args()
-    seeds = [123, 321, 666]
+    seeds = [123, 321, 666] #Default Seeds
     processes = []
     """toad training settings"""
     config = load_config(arg)
+    print(config.seed)
+    if(config.seed != "default"):
+        seeds = config.seed
 
+    l = len(seeds)
+    print("using seed: {}".format(seeds))
     """train model and record results"""
-    
+
     print("Training starts.")
     time_start = time.time()
     
-    for i in range(3):
+    for i in range(l):
         processes.append(
             Process(target = run_all, args=(config, seeds[i], recorded, rank))
         )
     
-    for i in range(3):
+    for i in range(l):
         processes[i].start()
         
-    for i in range(3):
+    for i in range(l):
         processes[i].join()
     
     time_end = time.time()
@@ -284,7 +289,7 @@ if __name__ == '__main__':
     
     writer = pd.ExcelWriter('data.xlsx')
     
-    for i in range(3):
+    for i in range(l):
         dataframes[i].to_excel(writer, sheet_name = "seed{}".format(rank[i]))
         
     writer.save()
